@@ -126,17 +126,19 @@ bool g_OverrideNextCallVote[MAXPLAYERS + 1];
 
 enum CallVoteForwards
 {
-	Handle:CallVote_Forward,
-	Handle:CallVote_Vis,
+	CallVote_Forward,
+	CallVote_Vis,
 }
 
 enum CallVoteListData
 {
-	NativeVotesOverride:CallVoteList_VoteType,
-	bool:CallVoteList_VoteEnabled,
+	CallVoteList_VoteType,
+	CallVoteList_VoteEnabled,
 }
 
-int g_CallVotes[NativeVotesOverride][CallVoteForwards];
+#define CALLVOTELISTDATA_SIZE				2
+
+Handle g_CallVotes[NativeVotesOverride][CallVoteForwards];
 
 #include "nativevotes/game.sp"
 
@@ -416,7 +418,7 @@ public Action Command_CallVote(int client, const char[] command, int argc)
 				return Plugin_Handled;
 			}
 
-			ArrayList hVoteTypes = new ArrayList(view_as<int>(CallVoteListData)); // Stores arrays of CallVoteListData
+			ArrayList hVoteTypes = new ArrayList(CALLVOTELISTDATA_SIZE); // Stores arrays of CallVoteListData
 			
 			Game_AddDefaultVotes(hVoteTypes);
 
@@ -2410,9 +2412,7 @@ public int Native_RegisterVoteCommand(Handle plugin, int numParams)
 	Function callVoteHandler = GetNativeFunction(2);
 	Function visHandler = GetNativeFunction(3);
 
-	// This tosses an error so use the simplified version
-	//	if (view_as<int>(overrideType) > sizeof(g_CallVotes))
-	if (overrideType > NativeVotesOverride)
+	if (view_as<int>(overrideType) > sizeof(g_CallVotes))
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Override Type %d is not supported by this version of NativeVotes", overrideType);
 		return;
@@ -2439,7 +2439,7 @@ public int Native_UnregisterVoteCommand(Handle plugin, int numParams)
 	Function callVoteHandler = GetNativeFunction(2);
 	Function visHandler = GetNativeFunction(3);
 
-	if (overrideType > NativeVotesOverride)
+	if (view_as<int>(overrideType) > sizeof(g_CallVotes))
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Override Type %d is not supported by this version of NativeVotes", overrideType);
 		return;
